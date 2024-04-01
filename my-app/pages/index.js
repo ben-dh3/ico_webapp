@@ -15,6 +15,7 @@ export default function Home() {
   const [balanceOfCryptoTokens, setBalanceOfCryptoTokens] = useState(zero);
   const [tokenAmount, setTokenAmount] = useState(zero);
   const [tokensMinted, setTokensMinted] = useState(zero);
+  const [isOwner, setIsOwner] = useState(false);
   const web3ModalRef = useRef();
 
    const getBalanceOfCryptoTokens = async () => {
@@ -110,6 +111,21 @@ export default function Home() {
     return web3Provider;
   };
 
+  const getOwner = async () => {
+    try {
+      const provider = await getProviderOrSigner();
+      const tokenContract = new Contract(TOKEN_CONTRACT_ADDRESS, TOKEN_CONTRACT_ABI, provider);
+      const _owner = await tokenContract.owner();
+      const signer = await getProviderOrSigner(true);
+      const address = await signer.getAddress();
+      if (address.toLowerCase() === _owner.toLowerCase()) {
+        setIsOwner(true);
+      }
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
+
   const connectWallet = async () => {
     try {
       await getProviderOrSigner();
@@ -140,7 +156,7 @@ export default function Home() {
         </div>
       );
     }
-    if (walletConnected) {
+    if (walletConnected && isOwner) {
       return (
         <div>
           <button className={styles.button1} onClick={withdrawCoins}>
